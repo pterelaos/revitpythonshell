@@ -81,18 +81,28 @@ namespace RevitPythonShell
             _commandData = commandData;
 
             // provide a hook into Autodesk Revit
-            new ScriptExecutor(_commandData, _message, _elements).SetupEnvironment(ironTextBoxControl.Engine, ironTextBoxControl.Scope);
+            ScriptScope scope;
+            new ScriptExecutor(_commandData, _message, _elements).SetupEnvironment(ironTextBoxControl.Engine, out scope);
+            ironTextBoxControl.Scope = scope;
 
-            var initScript = RevitPythonShellApplication.GetInitScript();
-            if (initScript != null)
+            Show();
+
+            System.ComponentModel.BackgroundWorker worker = new System.ComponentModel.BackgroundWorker();
+
+            worker.DoWork += (s, e) =>
             {
-                var scriptSource = ironTextBoxControl.Engine.CreateScriptSourceFromString(initScript, SourceCodeKind.Statements);
-                scriptSource.Execute(ironTextBoxControl.Scope);
-            }
+                // TODO: check whether this is needed if all is installed as an addin
+                var initScript = RevitPythonShellApplication.GetInitScript();
+                if (initScript != null)
+                {
+                    var scriptSource = ironTextBoxControl.Engine.CreateScriptSourceFromString(initScript, SourceCodeKind.Statements);
+                    scriptSource.Execute(ironTextBoxControl.Scope);
+                }
 
-            ironTextBoxControl.CompletionRequested += new EventHandler<IronTextBox.CompletionRequestedEventArgs>(ironTextBoxControl_CompletionRequested);
+                ironTextBoxControl.CompletionRequested += new EventHandler<IronTextBox.CompletionRequestedEventArgs>(ironTextBoxControl_CompletionRequested);
+            };
 
-            ShowDialog();
+            worker.RunWorkerAsync();
 
             message = (ironTextBoxControl.Scope.GetVariable("__message__") ?? "").ToString();
             return (int)(ironTextBoxControl.Scope.GetVariable("__result__") ?? Result.Succeeded);
@@ -150,7 +160,7 @@ namespace RevitPythonShell
                 return null;
             }
 
-            var completion = (IList<object>)ops.Call(completer, uncompleted);
+            var completion = (IList<object>)ops.Invoke(completer, uncompleted);
             if (completion == null)
             {
                 return null;
