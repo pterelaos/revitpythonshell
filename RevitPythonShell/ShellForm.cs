@@ -85,25 +85,25 @@ namespace RevitPythonShell
             new ScriptExecutor(_commandData, _message, _elements).SetupEnvironment(ironTextBoxControl.Engine, out scope);
             ironTextBoxControl.Scope = scope;
 
+            var initScript = RevitPythonShellApplication.GetInitScript();
+            if (initScript != null)
+            {
+                var scriptSource = ironTextBoxControl.Engine.CreateScriptSourceFromString(initScript, SourceCodeKind.Statements);
+                scriptSource.Execute(ironTextBoxControl.Scope);
+            }
+
+            ironTextBoxControl.CompletionRequested += new EventHandler<IronTextBox.CompletionRequestedEventArgs>(ironTextBoxControl_CompletionRequested);
+
             Show();
 
-            System.ComponentModel.BackgroundWorker worker = new System.ComponentModel.BackgroundWorker();
-
-            worker.DoWork += (s, e) =>
-            {
-                // TODO: check whether this is needed if all is installed as an addin
-                var initScript = RevitPythonShellApplication.GetInitScript();
-                if (initScript != null)
-                {
-                    var scriptSource = ironTextBoxControl.Engine.CreateScriptSourceFromString(initScript, SourceCodeKind.Statements);
-                    scriptSource.Execute(ironTextBoxControl.Scope);
-                }
-
-                ironTextBoxControl.CompletionRequested += new EventHandler<IronTextBox.CompletionRequestedEventArgs>(ironTextBoxControl_CompletionRequested);
-            };
-
-            worker.RunWorkerAsync();
-
+            //System.ComponentModel.BackgroundWorker worker = new System.ComponentModel.BackgroundWorker();
+            //worker.DoWork += (s, e) =>
+            //{
+            //    // TODO: check whether this is needed if all is installed as an addin
+            //    ironTextBoxControl.ExecuteSingleStatement("from bvn import *");
+            //};
+            //worker.RunWorkerAsync();
+            
             message = (ironTextBoxControl.Scope.GetVariable("__message__") ?? "").ToString();
             return (int)(ironTextBoxControl.Scope.GetVariable("__result__") ?? Result.Succeeded);
         }
