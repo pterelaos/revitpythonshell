@@ -1,0 +1,1 @@
+resgen /compile ScriptOutput.resx ShellForm.resx ConfigureCommandsForm.resx && Al /t:lib /embed:ShellForm.resources,RevitPythonShell.ShellForm.resources /embed:ConfigureCommandsForm.resources,RevitPythonShell.ConfigureCommandsForm.resources /embed:ScriptOutput.resources,RevitPythonShell.ScriptOutput.resources /out:RevitPythonShell.resources.dll
