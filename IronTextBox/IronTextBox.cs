@@ -789,7 +789,6 @@ namespace IronTextBox
             //Create the ScriptRuntime
             Engine = IronPython.Hosting.Python.CreateEngine();
             //Create the scope for the ScriptEngine
-            Scope = Engine.CreateScope();            
 
             //IronTextBox's CommandEntered event
             CommandEntered += IronTextBoxControlCommandEntered;

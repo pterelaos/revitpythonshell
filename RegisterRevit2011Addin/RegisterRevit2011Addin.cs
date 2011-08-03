@@ -25,7 +25,7 @@ namespace RegisterRevit2011Addin
 
             var manifest = new RevitAddInManifest();
             var application = new RevitAddInApplication("RevitPythonShell", assemblyPath, Guid.NewGuid(), 
-                "RevitPythonShell.RevitPythonShellApplication");
+                "RevitPythonShell.RevitPythonShellApplication", "RPS");
             manifest.AddInApplications.Add(application);
             var revitProducts = RevitProductUtility.GetAllInstalledRevitProducts();
 

@@ -6,6 +6,7 @@ using Microsoft.Scripting;
 using Microsoft.Scripting.Hosting;
 using Autodesk.Revit.UI;
 using Autodesk.Revit.DB;
+using IronPython.Runtime;
 
 namespace RevitPythonShell
 {
@@ -41,8 +42,8 @@ namespace RevitPythonShell
             try
             {
                 var engine = IronPython.Hosting.Python.CreateEngine();
-                var scope = engine.CreateScope();
-                SetupEnvironment(engine, scope);
+                ScriptScope scope;
+                SetupEnvironment(engine, out scope);
 
                 var scriptOutput = new ScriptOutput();
                 scriptOutput.Show();
@@ -85,8 +86,10 @@ namespace RevitPythonShell
         /// <summary>
         /// Set up an IronPython environment - for interactive shell or for canned scripts
         /// </summary>
-        public void SetupEnvironment(ScriptEngine engine, ScriptScope scriptScope)
-        {                        
+        public void SetupEnvironment(ScriptEngine engine, out ScriptScope scriptScope)
+        {
+            scriptScope = IronPython.Hosting.Python.CreateModule(engine, "__main__");
+
             // add variables from Revit
             scriptScope.SetVariable("__revit__", _commandData.Application);
             scriptScope.SetVariable("__commandData__", _commandData);
@@ -100,8 +103,7 @@ namespace RevitPythonShell
             // add the current scope as module '__main__'
             var languageContext = Microsoft.Scripting.Hosting.Providers.HostingHelpers.GetLanguageContext(engine);
             var pythonContext = (IronPython.Runtime.PythonContext)languageContext;
-            var module = pythonContext.CreateModule(null, GetScope(scriptScope), null, IronPython.Runtime.ModuleOptions.None);            
-            pythonContext.PublishModule("__main__", module);
+            //var module = pythonContext.CreateModule(null, GetScope(scriptScope), null, IronPython.Runtime.ModuleOptions.None);
 
             // we can now call ourselves "__main__" :)
             scriptScope.SetVariable("__name__", "__main__");

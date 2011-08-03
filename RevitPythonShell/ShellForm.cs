@@ -81,7 +81,9 @@ namespace RevitPythonShell
             _commandData = commandData;
 
             // provide a hook into Autodesk Revit
-            new ScriptExecutor(_commandData, _message, _elements).SetupEnvironment(ironTextBoxControl.Engine, ironTextBoxControl.Scope);
+            ScriptScope scope;
+            new ScriptExecutor(_commandData, _message, _elements).SetupEnvironment(ironTextBoxControl.Engine, out scope);
+            ironTextBoxControl.Scope = scope;
 
             var initScript = RevitPythonShellApplication.GetInitScript();
             if (initScript != null)
@@ -92,8 +94,8 @@ namespace RevitPythonShell
 
             ironTextBoxControl.CompletionRequested += new EventHandler<IronTextBox.CompletionRequestedEventArgs>(ironTextBoxControl_CompletionRequested);
 
-            ShowDialog();
-
+            Show();
+            
             message = (ironTextBoxControl.Scope.GetVariable("__message__") ?? "").ToString();
             return (int)(ironTextBoxControl.Scope.GetVariable("__result__") ?? Result.Succeeded);
         }
@@ -150,7 +152,7 @@ namespace RevitPythonShell
                 return null;
             }
 
-            var completion = (IList<object>)ops.Call(completer, uncompleted);
+            var completion = (IList<object>)ops.Invoke(completer, uncompleted);
             if (completion == null)
             {
                 return null;
